@@ -1,3 +1,3 @@
 # RB120
-Practice, exercises, and projects for Launch School's RB120 course.
 
+Practice, exercises, and projects for Launch School's RB120 course
