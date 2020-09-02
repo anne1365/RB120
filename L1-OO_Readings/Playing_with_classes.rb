@@ -22,7 +22,7 @@ puts sherlock.name = "Sherlock my boiii"
 puts sherlock.name=("Sherlock")
 
 # --------------------------------------------------------------------------------------------------
-class GoodDog
+class Dog
   attr_accessor :name
 
   def initialize(name)
@@ -34,9 +34,10 @@ class GoodDog
   end
 end
 
-sparky = GoodDog.new("Sparky")
+sparky = Dog.new("Sparky")
 puts sparky.speak
 puts sparky.name
 
 sparky.name = "Spartacus"
 puts sparky.name
+# ------------------------------------------------------------------------
