@@ -2,21 +2,6 @@
 
 60% concepts and about 40% code
 last question is long 0 about code - writing a program using content
-- wiritng up examples for each concept
-# Use attr_* to create setter and getter methods
-# How to call setters and getters
-# Instance methods vs. class methods
-# Referencing and setting instance variables vs. using getters and setters
-# Class inheritance, encapsulation, and polymorphism
-# Modules
-# Method lookup path
-# self
-# Calling methods with self
-# More about self
-# Reading OO code
-# Fake operators and equality
-# Truthiness
-# Working with collaborator objects
 
 # Classes and objects
 # Use attr_* to create setter and getter methods

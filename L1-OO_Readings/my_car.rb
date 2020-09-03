@@ -12,7 +12,16 @@ class MyCar
   def self.what_am_i
     "I'm the MyCar class!"
   end
+
+  def self.gas_mileage(miles, gallons)
+    gas_mileage = miles / gallons
+    puts "Your car's gas mileage is #{gas_mileage} miles per gallon."
+  end
   
+  def to_s
+    "Hi there friend! That sure is a nice #{self.model} you got there!"
+  end
+
   def info
     puts "Congrats on the new car! You've got a #{@color} #{@year} #{@model}!"
   end
@@ -43,14 +52,17 @@ class MyCar
 end
 
 
+MyCar.gas_mileage(450, 14.5)
 
 junker = MyCar.new(1987, 'Ford Tempo', 'white')
-puts junker.color
-junker.spray_paint('red')
-puts junker.color
+puts junker
 
-puts junker.model
-puts junker.year
+# puts junker.color
+# junker.spray_paint('red')
+# puts junker.color
+
+# puts junker.model
+# puts junker.year
 
 # junker.info
 # junker.current_speed
