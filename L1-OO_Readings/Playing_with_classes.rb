@@ -51,7 +51,11 @@ class Dog
   end
 
   def info
-    "#{name} weighs #{weight} and is #{height} tall."
+    "#{self.name} weighs #{self.weight} and is #{self.height} tall."
+  end
+
+  def some_method
+    self.info
   end
 end
 
@@ -61,7 +65,7 @@ puts sparky.info
 
 sparky.change_info('Spartacus', '24 inches', '45 lbs')
 puts sparky.info
-
+puts sparky.some_method
 # ------------------------------------------------------------------------
 
 
