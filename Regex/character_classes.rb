@@ -19,3 +19,8 @@ p text.scan(/[\/][\[][\^]\w\-\w[\]][\/]/)
  /\[\^[0-9A-Za-z]-[0-9A-Za-z]\]/ <-- ANOTHER OPTION
  /[\[][\^][0-9A-Za-z]-[0-9A-Za-z][\]]/  <-- YET ANOTHER OPTION
 =end
+
+str = "This is stringy test thingy"
+str.scan(/\b[a-z]*ing[a-z]*\b/)
+
+'abc:xyz'.split(/:+/)
