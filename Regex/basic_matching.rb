@@ -1,1 +1,3 @@
-p 'catacomb'.match(/(comb|at)/)
+p 'catacomb'.scan(/(comb|at)/)
+
+p 
