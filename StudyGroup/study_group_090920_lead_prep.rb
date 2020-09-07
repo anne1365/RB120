@@ -1,5 +1,7 @@
 =begin
   CONCEPTS:
+  - 
+
 
   WRITTEN ADVICE:
 
