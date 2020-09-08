@@ -20,7 +20,6 @@
 # # two ways to invoke setter method - first is syntactical sugar
 # puts sherlock.name = "Sherlock my boiii"
 # puts sherlock.name=("Sherlock")
-
 # --------------------------------------------------------------------------------------------------
 
 class Dog
