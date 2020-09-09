@@ -1,4 +1,4 @@
-class MyCar
+class Vehicle
   attr_accessor :color
   attr_reader :year, :model
   
@@ -8,22 +8,10 @@ class MyCar
     @color = color
     @current_speed = 0
   end
-
-  def self.what_am_i
-    "I'm the MyCar class!"
-  end
-
+  
   def self.gas_mileage(miles, gallons)
     gas_mileage = miles / gallons
     puts "Your car's gas mileage is #{gas_mileage} miles per gallon."
-  end
-  
-  def to_s
-    "Hi there friend! That sure is a nice #{self.model} you got there!"
-  end
-
-  def info
-    puts "Congrats on the new car! You've got a #{@color} #{@year} #{@model}!"
   end
 
   def spray_paint(color)
@@ -52,23 +40,23 @@ class MyCar
 end
 
 
-MyCar.gas_mileage(450, 14.5)
+class MyCar < Vehicle
+  NUMBER_OF_DOORS = 2
+  
+  def self.what_am_i
+    "I'm the MyCar class!"
+  end
 
-junker = MyCar.new(1987, 'Ford Tempo', 'white')
-puts junker
+  def to_s
+    "Hi there friend! That sure is a nice #{self.model} you got there!"
+  end
 
-# puts junker.color
-# junker.spray_paint('red')
-# puts junker.color
+  def info
+    puts "Congrats on the new car! You've got a #{@color} #{@year} #{@model}!"
+  end
+end
 
-# puts junker.model
-# puts junker.year
 
-# junker.info
-# junker.current_speed
-# junker.speed_up(35)
-# junker.speed_up(41)
-# junker.brake(459)
-# junker.current_speed
-# junker.shut_off
-
+class MyTruck < Vehicle
+  NUMBER_OF_DOORS = 2
+end
