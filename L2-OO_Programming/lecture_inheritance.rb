@@ -1,48 +1,57 @@
 class Pet
-  def speak
-    'Animal noise!'
-  end
-
   def run
-    'running!'
+    puts 'running!'
   end
 
   def jump
-    'jumping!'
+    puts 'jumping!'
   end
 end
 
 
-class Cat < Animal
+class Cat < Pet
   def speak
-    'Meow!'
+    puts 'Meow!'
   end
 end
 
 
 class Dog < Pet
   def speak
-    'bark!'
+    puts 'bark!'
   end
 
   def swim
-    'swimming'
+    puts 'swimming'
   end
 
   def fetch
-    'fetching!'
+    puts 'fetching!'
   end
 end
 
 
 class Bulldog < Dog
   def swim
-    "can't swim!"
+    puts "can't swim!"
   end
 end
 
 
 
-teddy = Bulldog.new
-puts teddy.speak
-puts teddy.swim
+sherlock = Cat.new
+sherlock.run
+sherlock.speak
+sherlock.jump
+
+tim = Dog.new
+tim.fetch
+tim.swim
+tim.speak
+
+bubbles = Pet.new
+bubbles.run
+
+buddo = Bulldog.new
+buddo.run
+buddo.swim
