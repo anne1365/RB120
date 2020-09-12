@@ -11,18 +11,24 @@ class Score
 end
 
 class Move
-  VALUES = { 'rock' => ['scissors', 'lizard'],
-             'paper' => ['spock', 'rock'],
-             'scissors' => ['paper', 'lizard'],
-             'lizard' => ['spock', 'paper'],
-             'spock' => ['rock', 'scissors'] }
+  VALUES = { 'r' => 'rock',
+             'p' => 'paper',
+             's' => 'scissors',
+             'l' => 'lizard',
+             'o' => 'spock' }
+
+  VALUE_INTERACTIONS = { 'rock' => ['scissors', 'lizard'],
+                         'paper' => ['spock', 'rock'],
+                         'scissors' => ['paper', 'lizard'],
+                         'lizard' => ['spock', 'paper'],
+                         'spock' => ['rock', 'scissors'] }
 
   def initialize(value)
     @value = value
   end
 
   def >(other_move)
-    VALUES[@value].include?(other_move.to_s)
+    VALUE_INTERACTIONS[@value].include?(other_move.to_s)
   end
 
   def to_s
@@ -55,12 +61,13 @@ class Human < Player
   def choose
     choice = ''
     loop do
-      print "\nChoose rock, paper, scissors, lizard, or spock: "
+      puts "\nCHOOSE:"
+      puts " r - rock\n p - paper\n s - scissors\n l - lizard\n o - spock"
       choice = gets.chomp
-      break if Move::VALUES.include?(choice)
+      break if Move::VALUES.keys.include?(choice)
       puts("Error: That's not a valid choice!")
     end
-    self.move = Move.new(choice)
+    self.move = Move.new(Move::VALUES[choice])
     all_moves << move.to_s
   end
 end
@@ -71,7 +78,7 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::VALUES.keys.sample)
+    self.move = Move.new(Move::VALUES.values.sample)
     all_moves << move.to_s
   end
 end
@@ -115,8 +122,7 @@ class RPSGame
   end
 
   def display_moves
-    display_divider
-    puts "#{human.name} chose #{human.move}."
+    puts "\n#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}.\n\n"
   end
 
@@ -135,6 +141,7 @@ class RPSGame
   def display_scoreboard
     puts "\nYou have #{human_pts.score} points."
     puts "#{computer.name} has #{computer_pts.score} points."
+    display_divider
   end
 
   def display_round_outcome
@@ -148,9 +155,6 @@ class RPSGame
   end
 
   def display_final_winner
-    puts
-    display_divider
-
     if human_pts.score > computer_pts.score
       puts "HUMANITY PREVAILS - YOU'VE WON THE TOURNAMENT!"
     elsif computer_pts.score > human_pts.score
@@ -210,4 +214,4 @@ class RPSGame
   end
 end
 
-RPSGame.new.play # how we might kick off the gameplay rock
+RPSGame.new.play
