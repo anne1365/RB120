@@ -51,7 +51,7 @@ class Human < Player
     loop do
       puts "What's your name?"
       n = gets.chomp
-      break unless n.empty?
+      break unless n.empty? || !(n.match(/[A-Za-z]/))
       puts("Error: Invalid entry!")
     end
 
@@ -63,7 +63,7 @@ class Human < Player
     loop do
       puts "\nCHOOSE:"
       puts " r - rock\n p - paper\n s - scissors\n l - lizard\n o - spock"
-      choice = gets.chomp
+      choice = gets.chomp.downcase
       break if Move::VALUES.keys.include?(choice)
       puts("Error: That's not a valid choice!")
     end
@@ -129,13 +129,22 @@ class RPSGame
   def display_winner
     if human.move > computer.move
       puts "YOU WON! :D"
-      human_pts.increment
+      increment_score('human')
     elsif computer.move > human.move
       puts "COMPUTER WON! :("
-      computer_pts.increment
+      increment_score('computer')
     else
       puts "IT'S A TIE!"
     end
+  end
+
+  def increment_score(player)
+    case player
+    when 'human'
+      human_pts.increment
+    when 'computer'
+      computer_pts.increment
+    end    
   end
 
   def display_scoreboard
@@ -151,13 +160,21 @@ class RPSGame
   end
 
   def final_winner?
-    (computer_pts.score >= 3) || (human_pts.score >= 3)
+    (computer_pts.score >= 5) || (human_pts.score >= 5)
+  end
+
+  def human_final_winner?
+    human_pts.score > computer_pts.score
+  end
+
+  def computer_final_winner?
+    computer_pts.score > human_pts.score
   end
 
   def display_final_winner
-    if human_pts.score > computer_pts.score
+    if human_final_winner?
       puts "HUMANITY PREVAILS - YOU'VE WON THE TOURNAMENT!"
-    elsif computer_pts.score > human_pts.score
+    elsif computer_final_winner?
       puts "#{computer.name.upcase} HAS WON THE TOURNAMENT!"
     else
       puts "NO VICTORS TODAY - IT'S A TIE!"
