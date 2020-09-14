@@ -84,7 +84,6 @@ class Computer < Player
 end
 
 class RPSGame
-  attr_accessor :human, :computer, :human_pts, :computer_pts
 
   def initialize
     system('clear') || system('cls')
@@ -96,6 +95,8 @@ class RPSGame
   end
 
   private
+
+  attr_accessor :human, :computer, :human_pts, :computer_pts
 
   def display_divider
     puts "--------------------------------------------------------"
