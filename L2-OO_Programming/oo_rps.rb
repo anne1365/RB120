@@ -84,7 +84,6 @@ class Computer < Player
 end
 
 class RPSGame
-
   def initialize
     system('clear') || system('cls')
     display_welcome_message
@@ -145,7 +144,7 @@ class RPSGame
       human_pts.increment
     when 'computer'
       computer_pts.increment
-    end    
+    end
   end
 
   def display_scoreboard
