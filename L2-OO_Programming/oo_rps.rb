@@ -121,25 +121,47 @@ class RPSGame
     computer.choose
   end
 
+  def process_round_outcome
+    display_moves
+    identify_winner
+    display_winner
+    increment_score
+    display_scoreboard
+  end
+
   def display_moves
     puts "\n#{human.name} chose #{human.move}."
     puts "#{computer.name} chose #{computer.move}.\n\n"
   end
 
+  def identify_winner
+    @winner = if human_win?
+                'human'
+              elsif computer_win?
+                'computer'
+              else
+                'tie'
+              end
+  end
+
+  def human_win?
+    human.move > computer.move
+  end
+
+  def computer_win?
+    computer.move > human.move
+  end
+
   def display_winner
-    if human.move > computer.move
-      puts "YOU WON! :D"
-      increment_score('human')
-    elsif computer.move > human.move
-      puts "COMPUTER WON! :("
-      increment_score('computer')
-    else
-      puts "IT'S A TIE!"
+    case @winner
+    when 'human' then puts "YOU WON! :D"
+    when 'computer' then puts "COMPUTER WON! :("
+    else puts "IT'S A TIE!"
     end
   end
 
-  def increment_score(player)
-    case player
+  def increment_score
+    case @winner
     when 'human'
       human_pts.increment
     when 'computer'
@@ -151,12 +173,6 @@ class RPSGame
     puts "\nYou have #{human_pts.score} points."
     puts "#{computer.name} has #{computer_pts.score} points."
     display_divider
-  end
-
-  def display_round_outcome
-    display_moves
-    display_winner
-    display_scoreboard
   end
 
   def final_winner?
@@ -219,7 +235,7 @@ class RPSGame
     loop do
       loop do
         make_choices
-        display_round_outcome
+        process_round_outcome
         break display_final_winner if final_winner?
       end
 
