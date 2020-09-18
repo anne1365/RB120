@@ -213,6 +213,7 @@ class TTTGame
       break if name.match(/[A-Za-z]/)
       puts "Error: must input a name!"
     end
+    clear
     @human_name = name
   end
 
@@ -338,6 +339,7 @@ class TTTGame
   end
 
   def display_result
+    clear
     display_board
 
     case determine_winner
