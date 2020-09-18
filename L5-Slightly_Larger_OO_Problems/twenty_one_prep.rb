@@ -19,7 +19,7 @@
  - the total closest to 21 without going over wins
  - if dealer busts then player wins
 
- DESCRIPTION: 
+ DESCRIPTION:
  Twenty-one is a card game in which the dealer and player seek to have total
  hands equalling, but not exceeding, twenty-one.
 
@@ -31,7 +31,7 @@
    hand total is closer to 21 will win
  - if hand totals are the same it's a tie
 
- NOUNS:
+NOUNS:
  - deck
  - card
  - player's hand
@@ -42,14 +42,14 @@
  - game
  - total
 
- VERBS:
+VERBS:
  - shuffle
  - deal
  - hit
  - stay
  - bust
 
- ORGANIZED NOUNS & VERBS
+ORGANIZED NOUNS & VERBS
  - Participant
     - hit
     - stay
@@ -66,8 +66,14 @@
  - Game
     - play
 
- CONCEPTUAL QUESTIONS: 
+CONCEPTUAL QUESTIONS:
  - can you hold state in a module?
+
+DESIGN THOUGHTS:
+ - I want to think more about whether my methods are divided into the
+   appropriate classes
+ - Currently a round doesn't immediately end when a participant either busts
+   or reaches 21, and that's what should happen
 =end
 
 module Validatable
@@ -77,70 +83,84 @@ end
 module Hand
   WINNING_NUMBER = 21
 
-  def hit
+  def hit(participant); end
 
+  def stay; end
+
+  def get_card_values(hand)
+    hand.flatten.map(&:value)
   end
 
-  def stay
-
+  def determine_total(hand)
+    sum = 0
+    get_card_values(hand).each do |value|
+      if ('1'..'10').include?(value)
+        sum += value.to_i
+      elsif ('JQK').include?(value)
+        sum += 10
+      elsif value == 'A' && sum <= 10
+        sum += 11
+      elsif value == 'A' && sum > 10
+        sum += 1
+      end
+    end
+    sum
   end
 
-  def busted?
-
+  def busted?(hand)
+    determine_total(hand) > WINNING_NUMBER
   end
 end
 
 class Player
   include Hand
 
-  attr_accessor :hand, :total
+  attr_accessor :hand
 
   def initialize(total = 0)
     @hand = []
     @total = total
+  end
+
+  def total
+    determine_total(hand)
   end
 end
 
 class Dealer
-  DEALER_STAY_AT = 17
-
   include Hand
 
-  attr_accessor :hand, :total
+  attr_accessor :hand
 
   def initialize(total = 0)
     @hand = []
     @total = total
   end
 
-  def deal
-
+  def total
+    determine_total(hand)
   end
 end
 
 class Deck
-  SUITS = %w(D H S C)  # diamonds, hearts, spades, and clubs
-  VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
+  SUITS = %w(♦ ♣ ♠ ♥) # diamonds, hearts, spades, and clubs
+  VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A)
   FACE_CARD = %w(Jack Queen King)
 
   attr_accessor :cards
 
   def initialize
-    @cards = shuffle.map { |card| card = Card.new(card[0], card[1]) }
-    #SANITY CHECK
-    @cards.each { |card| puts "#{card.value} of #{card.suit}" }
+    @cards = shuffle.map { |card| Card.new(card[0], card[1]) }
   end
 
   def shuffle
     SUITS.product(VALUES).shuffle
   end
 
-  def deal(number_of_cards)
+  def deal(number_of_cards = 1)
     hand = []
-    hand << self.cards.shift(number_of_cards)
+    hand << cards.shift(number_of_cards)
     hand
-    @cards.each { |card| puts "#{card.value} of #{card.suit}" }
-    # IT'S WORKING!
   end
 end
 
@@ -148,30 +168,33 @@ class Card < Deck
   attr_reader :value, :suit
 
   def initialize(suit, value)
-    @suit = suit    
+    @suit = suit
     @value = value
   end
 
-  def drawn?
-    
-  end
+  def drawn?; end
 end
 
-# Orchestration Engine
+# ORCHESTRATION ENGINE
 class TwentyOneGame
+  include Validatable
+
+  HIT = 'H'
+  STAY = 'S'
+
   attr_accessor :player, :dealer, :deck
-  
+
   def initialize
     @player = Player.new
     @dealer = Dealer.new
     @deck = Deck.new
   end
-  
+
   def play
     display_welcome_message
     loop do
       deal_cards
-      show_initial_cards
+      show_cards
       player_turn
       dealer_turn
       show_result
@@ -182,32 +205,92 @@ class TwentyOneGame
 
   private
 
+  def joinor(array, punc = ', ', word = 'and')
+    if array.count > 1
+      last_element = array.delete(array.last)
+      "#{array.join(punc)} #{word} #{last_element}"
+    else
+      array[0]
+    end
+  end
+
   def display_welcome_message
     puts "Welcome to Twenty-One!"
   end
-  
+
   def deal_cards
-    player.hand << deck.deal(2)
+    player.hand << deck.deal(2).flatten
+    dealer.hand << deck.deal(2).flatten
   end
 
-  def show_initial_cards
+  def show_cards
+    player_cards = player.get_card_values(player.hand)
+    puts "YOU HAVE: #{joinor(player_cards)} (TOTAL: #{player.total})"
 
+    dealer_cards = player.get_card_values(dealer.hand)
+    puts "DEALER HAS: #{joinor(dealer_cards)} (TOTAL: #{dealer.total})" # REMEMBER TO HIDE LAST # IN FINAL CODE
   end
-  
-  def player_turn
 
+  def player_turn # NEED IMPLEMENTATION
+    loop do
+      choice = player_hit_or_stay
+      if choice == HIT
+        hit(player.hand)
+        break puts "You busted! TOTAL #{player.total}" if player.busted?(player.hand)
+        puts "You hit! Your new total is #{player.total}."
+      elsif choice == STAY
+        break puts "You stayed with a total of #{player.total}!"
+      end
+    end
   end
 
-  def dealer_turn
+  def player_hit_or_stay
+    puts "Would you like to HIT (H) or STAY (S)?"
+    answer = ''
+    loop do
+      answer = gets.chomp.upcase
+      break if [HIT, STAY].include?(answer)
+      puts "Error: Invalid response!"
+    end
+    answer
+  end
 
+  def dealer_turn # NEED IMPLEMENTATION
+    loop do
+      break puts "Dealer stayed with a total of #{dealer.total}." if dealer.total >= 17
+      hit(dealer.hand)
+      break puts "Dealer busted (TOTAL: #{dealer.total})! YOU WIN!" if dealer.busted?(dealer.hand)
+      puts "Dealer hit (NEW TOTAL: #{dealer.total})!"
+    end
+  end
+
+  def hit(hand)
+    hand << deck.deal
+    hand.flatten
   end
 
   def show_result
+    case determine_winner
+    when 'player' then puts "You win the round!"
+    when 'dealer' then puts "Dealer wins the round!"
+    else puts "It's a tie!"
+    end
+  end
 
+  def determine_winner
+    if player.total > dealer.total
+      'player'
+    elsif player.total < dealer.total
+      'dealer'
+    else
+      'tie'
+    end
   end
 
   def play_again?
-
+    puts "Would you like to play again?"
+    # IMPLEMENT REST LATER
+    puts "Maybe later :P"
   end
 
   def display_goodbye_message
