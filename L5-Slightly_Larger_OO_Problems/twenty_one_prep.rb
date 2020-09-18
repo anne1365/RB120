@@ -74,22 +74,23 @@ DESIGN THOUGHTS:
    appropriate classes
  - Currently a round doesn't immediately end when a participant either busts
    or reaches 21, and that's what should happen
+ - need to do something about the hit method so that it works, and I can still
+   keep the dealer and player functionality separate
+ - incorporate the yaml <3 <3 <3
+ - all the output text needs reworking before first draft is done
 =end
 
-module Validatable
-  # thinking I'll put all my validation here
-end
 
 module Hand
+  HIT = 'H'
+  STAY = 'S'
   WINNING_NUMBER = 21
-
-  def hit(participant); end
-
-  def stay; end
 
   def get_card_values(hand)
     hand.flatten.map(&:value)
   end
+
+  def hit; end # IMPLEMENT
 
   def determine_total(hand)
     sum = 0
@@ -112,6 +113,10 @@ module Hand
   end
 end
 
+
+
+
+
 class Player
   include Hand
 
@@ -125,7 +130,35 @@ class Player
   def total
     determine_total(hand)
   end
+
+  def hit_or_stay
+    puts "Would you like to HIT (H) or STAY (S)?"
+    answer = ''
+    loop do
+      answer = gets.chomp.upcase
+      break if [HIT, STAY].include?(answer)
+      puts "Error: Invalid response!"
+    end
+    answer
+  end
+
+  def turn # NEED IMPLEMENTATION
+    loop do
+      choice = hit_or_stay
+      if choice == HIT
+        hit(hand)
+        break puts "You busted! TOTAL #{total}" if busted?(hand)
+        puts "You hit! Your new total is #{total}."
+      elsif choice == STAY
+        break puts "You stayed with a total of #{total}!"
+      end
+    end
+  end
 end
+
+
+
+
 
 class Dealer
   include Hand
@@ -140,7 +173,20 @@ class Dealer
   def total
     determine_total(hand)
   end
+
+  def turn # NEED IMPLEMENTATION
+    loop do
+      break puts "Dealer stayed with a total of #{total}." if total >= 17
+      hit(hand)
+      break puts "Dealer busted (TOTAL: #{total})! YOU WIN!" if busted?(hand)
+      puts "Dealer hit (NEW TOTAL: #{total})!"
+    end
+  end
 end
+
+
+
+
 
 class Deck
   SUITS = %w(♦ ♣ ♠ ♥) # diamonds, hearts, spades, and clubs
@@ -164,6 +210,10 @@ class Deck
   end
 end
 
+
+
+
+
 class Card < Deck
   attr_reader :value, :suit
 
@@ -171,9 +221,11 @@ class Card < Deck
     @suit = suit
     @value = value
   end
-
-  def drawn?; end
 end
+
+
+
+
 
 # ORCHESTRATION ENGINE
 class TwentyOneGame
@@ -195,8 +247,8 @@ class TwentyOneGame
     loop do
       deal_cards
       show_cards
-      player_turn
-      dealer_turn
+      player.turn
+      dealer.turn
       show_result
       break unless play_again?
     end
@@ -204,6 +256,10 @@ class TwentyOneGame
   end
 
   private
+
+  def clear
+    system('cls')
+  end
 
   def joinor(array, punc = ', ', word = 'and')
     if array.count > 1
@@ -231,40 +287,7 @@ class TwentyOneGame
     puts "DEALER HAS: #{joinor(dealer_cards)} (TOTAL: #{dealer.total})" # REMEMBER TO HIDE LAST # IN FINAL CODE
   end
 
-  def player_turn # NEED IMPLEMENTATION
-    loop do
-      choice = player_hit_or_stay
-      if choice == HIT
-        hit(player.hand)
-        break puts "You busted! TOTAL #{player.total}" if player.busted?(player.hand)
-        puts "You hit! Your new total is #{player.total}."
-      elsif choice == STAY
-        break puts "You stayed with a total of #{player.total}!"
-      end
-    end
-  end
-
-  def player_hit_or_stay
-    puts "Would you like to HIT (H) or STAY (S)?"
-    answer = ''
-    loop do
-      answer = gets.chomp.upcase
-      break if [HIT, STAY].include?(answer)
-      puts "Error: Invalid response!"
-    end
-    answer
-  end
-
-  def dealer_turn # NEED IMPLEMENTATION
-    loop do
-      break puts "Dealer stayed with a total of #{dealer.total}." if dealer.total >= 17
-      hit(dealer.hand)
-      break puts "Dealer busted (TOTAL: #{dealer.total})! YOU WIN!" if dealer.busted?(dealer.hand)
-      puts "Dealer hit (NEW TOTAL: #{dealer.total})!"
-    end
-  end
-
-  def hit(hand)
+  def hit(hand) # SEE IF I CAN'T MOVE THIS TO HAND MODULE
     hand << deck.deal
     hand.flatten
   end
@@ -277,7 +300,7 @@ class TwentyOneGame
     end
   end
 
-  def determine_winner
+  def determine_winner # LOGIC DOESN'T ACCOUNT FOR WHETHER PARTICIPANT HAS BUSTED
     if player.total > dealer.total
       'player'
     elsif player.total < dealer.total
