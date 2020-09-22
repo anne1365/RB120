@@ -5,6 +5,11 @@
 # allowing player to pick marker
 # setting name for human and computer
 
+
+module Displayable
+
+end
+
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +  # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +  # columns
@@ -144,6 +149,8 @@ end
 
 # Orchestration Engine
 class TTTGame
+  include Displayable
+  
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
   FIRST_TO_MOVE = [HUMAN_MARKER, COMPUTER_MARKER]
@@ -180,7 +187,7 @@ class TTTGame
   end
 
   def pause
-    puts "Hit any key to continue!"
+    puts "Hit enter to continue!"
     gets.chomp
     system('cls')
   end
@@ -232,6 +239,7 @@ class TTTGame
   def play_tournament
     loop do
       @current_marker = prompt_who_goes_first
+      clear
       display_board if @current_marker == HUMAN_MARKER
       player_move
       display_result
@@ -247,8 +255,8 @@ class TTTGame
     puts " 1 - I am!\n 2 - #{computer_name} can go first!\n 3 - You pick!"
     preference = ''
     loop do
-      preference = gets.chomp.to_i
-      break if (1..3).include?(preference)
+      preference = gets.chomp
+      break if ('1'..'3').include?(preference)
       puts "Error: Invalid response!"
     end
     determine_who_goes_first(preference)
@@ -256,9 +264,9 @@ class TTTGame
 
   def determine_who_goes_first(preference)
     case preference
-    when 1 then HUMAN_MARKER
-    when 2 then COMPUTER_MARKER
-    when 3 then FIRST_TO_MOVE.sample
+    when '1' then HUMAN_MARKER
+    when '2' then COMPUTER_MARKER
+    when '3' then FIRST_TO_MOVE.sample
     end
   end
 
@@ -406,6 +414,7 @@ class TTTGame
   end
 
   def display_goodbye_message
+    clear
     puts "Thanks for playing Tic-Tac-Toe, #{human_name}! Goodbye!"
   end
 end
