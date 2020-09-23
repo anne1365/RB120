@@ -23,8 +23,13 @@ class Interaction
     @person = Person.new("Mike")
   end
 
-  
+  def greet(name)
+    say_hi(name)
+  end
 end
 
 a = Interaction.new
-a.say_hi(a.person.name)
+a.greet('Anne')
+
+
+

@@ -5,9 +5,71 @@
 # allowing player to pick marker
 # setting name for human and computer
 
-
 module Displayable
+  def clear
+    system('cls')
+  end
 
+  def clear_screen_and_display_board
+    clear
+    display_board
+  end
+
+  def joinor(array, punc = ', ', word = 'or')
+    if array.count > 1
+      last_element = array.delete(array.last)
+      "#{array.join(punc)}#{punc}#{word} #{last_element}"
+    else
+      array[0]
+    end
+  end
+
+  def display_welcome_message
+    puts "Welcome to Tic-Tac-Toe!"
+    puts ""
+  end
+
+  def display_play_again_message
+    puts "Let's play again!"
+    puts ""
+  end
+
+  def display_board
+    puts ""
+    puts "You're an #{human.marker}. #{computer_name} is an #{computer.marker}."
+    puts ""
+    board.draw
+    puts ""
+  end
+
+  def display_result
+    clear
+    display_board
+
+    case determine_winner
+    when TTTGame::HUMAN then puts "You won!"
+    when TTTGame::COMPUTER then puts "#{computer_name} won!"
+    else puts "It's a tie!"
+    end
+  end
+
+  def display_scoreboard
+    player = human.name.upcase
+    computer = computer_name.upcase
+    puts "#{player}: #{TTTGame::SCORES[0]} | #{computer}: #{TTTGame::SCORES[1]}"
+  end
+
+  def display_final_winner(winner)
+    case winner
+    when TTTGame::HUMAN then puts "Congratulations! You've won the tournament!"
+    when TTTGame::COMPUTER then puts "#{computer_name} won the tournament!"
+    end
+  end
+
+  def display_goodbye_message
+    clear
+    puts "Thanks for playing Tic-Tac-Toe, #{human.name}! Goodbye!"
+  end
 end
 
 class Board
@@ -37,6 +99,10 @@ class Board
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
+
+  def [](num)
+    @squares[num].marker
+  end
 
   def []=(num, marker)
     @squares[num].marker = marker
@@ -140,89 +206,90 @@ class Square
 end
 
 class Player
-  attr_reader :marker
+  attr_accessor :name, :marker
 
   def initialize(marker)
     @marker = marker
   end
 end
 
+class Human < Player
+  def set_name
+    puts "What's your name?"
+    self.name = ''
+    loop do
+      self.name = gets.chomp
+      break if name.match(/[A-Za-z]/)
+      puts "Error: must input a name!"
+    end
+  end
+
+  def set_marker
+    puts "The computer's marker is O."
+    puts "Please input a single character to use as your marker:"
+    self.marker = ''
+    loop do
+      self.marker = gets.chomp
+      break if marker.length == 1 && marker.match(/[^ O]/)
+      puts "Error: Please input a single character that isn't O!"
+    end
+    marker
+  end
+end
+
+class Computer < Player
+  def ai_offense_or_defense(board, computer_marker, human_marker)
+    case board.nearly_winning_marker
+    when computer_marker then 'offense'
+    when human_marker then 'defense'
+    end
+  end
+
+  def ai_offense(board, marker)
+    board.target_square(marker)
+  end
+
+  def ai_defense(board, marker)
+    board.target_square(marker)
+  end
+
+  def select_random_square(board)
+    (board.unmarked_keys).sample
+  end
+end
+
 # Orchestration Engine
 class TTTGame
   include Displayable
-  
-  HUMAN_MARKER = 'X'
+
   COMPUTER_MARKER = 'O'
-  FIRST_TO_MOVE = [HUMAN_MARKER, COMPUTER_MARKER]
   HUMAN = 'human'
   COMPUTER = 'computer'
   SCORES = [0, 0] # [human wins, human losses]
 
-  attr_reader :board, :human, :computer, :computer_name
-  attr_accessor :human_name
+  attr_reader :board, :human, :computer, :computer_name, :human_marker
 
   def initialize
     @board = Board.new
-    @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
+    @human = Human.new(Square::INITIAL_MARKER)
+    @computer = Computer.new(COMPUTER_MARKER)
     @computer_name = ['R2D2', 'C3PO', 'Ava', 'Deep thought', 'HAL'].sample
   end
 
   def play
+    clear
     display_welcome_message
-    set_human_name
+    human.set_name
+    clear
+    @human_marker = human.set_marker
+    clear
     main_game
     display_goodbye_message
   end
 
   private
 
-  def clear
-    system('cls')
-  end
-
-  def clear_screen_and_display_board
-    clear
-    display_board
-  end
-
-  def pause
-    puts "Hit enter to continue!"
-    gets.chomp
-    system('cls')
-  end
-
-  def pause_and_reset
-    pause
-    reset
-  end
-
-  def joinor(array, punc = ', ', word = 'or')
-    if array.count > 1
-      last_element = array.delete(array.last)
-      "#{array.join(punc)}#{punc}#{word} #{last_element}"
-    else
-      array[0]
-    end
-  end
-
-  def display_welcome_message
-    clear
-    puts "Welcome to Tic-Tac-Toe!"
-    puts ""
-  end
-
-  def set_human_name
-    puts "What's your name?"
-    name = ''
-    loop do
-      name = gets.chomp
-      break if name.match(/[A-Za-z]/)
-      puts "Error: must input a name!"
-    end
-    clear
-    @human_name = name
-  end
+  attr_writer :human_marker
 
   def main_game
     loop do
@@ -239,15 +306,19 @@ class TTTGame
   def play_tournament
     loop do
       @current_marker = prompt_who_goes_first
-      clear
-      display_board if @current_marker == HUMAN_MARKER
-      player_move
-      display_result
-      keep_score
-      pause_and_reset
+      single_round
       break if winner?
     end
     determine_final_winner
+  end
+
+  def single_round
+    clear
+    display_board if @current_marker == human_marker
+    player_move
+    display_result
+    keep_score
+    pause_and_reset
   end
 
   def prompt_who_goes_first
@@ -257,25 +328,17 @@ class TTTGame
     loop do
       preference = gets.chomp
       break if ('1'..'3').include?(preference)
-      puts "Error: Invalid response!"
+      puts "Error: Please input 1, 2, or 3!"
     end
     determine_who_goes_first(preference)
   end
 
   def determine_who_goes_first(preference)
     case preference
-    when '1' then HUMAN_MARKER
+    when '1' then human_marker
     when '2' then COMPUTER_MARKER
-    when '3' then FIRST_TO_MOVE.sample
+    when '3' then [human_marker, COMPUTER_MARKER].sample
     end
-  end
-
-  def display_board
-    puts ""
-    puts "You're an #{human.marker}. #{computer_name} is an #{computer.marker}."
-    puts ""
-    board.draw
-    puts ""
   end
 
   def player_move
@@ -287,7 +350,7 @@ class TTTGame
   end
 
   def human_turn?
-    @current_marker == HUMAN_MARKER
+    @current_marker == human_marker
   end
 
   def current_player_moves
@@ -296,7 +359,7 @@ class TTTGame
       @current_marker = COMPUTER_MARKER
     else
       computer_moves
-      @current_marker = HUMAN_MARKER
+      @current_marker = human_marker
     end
   end
 
@@ -306,7 +369,7 @@ class TTTGame
     loop do
       square = gets.chomp.to_i
       break if (board.unmarked_keys).include?(square)
-      puts "Error: Invalid choice!"
+      puts "Error: That square isn't available!"
     end
     board[square] = human.marker
   end
@@ -315,45 +378,25 @@ class TTTGame
     if board.unmarked_keys.include?(5)
       board[5] = computer.marker
     elsif board.strategic_move_available?
-      case determine_ai_offense_or_defense
-      when 'offense' then ai_offense
-      when 'defense' then ai_defense
-      end
+      strategic_computer_move
     else
-      board[(board.unmarked_keys).sample] = computer.marker
+      board[computer.select_random_square(board)] = computer.marker
     end
   end
 
-  def determine_ai_offense_or_defense
-    case board.nearly_winning_marker
-    when COMPUTER_MARKER then 'offense'
-    when HUMAN_MARKER then 'defense'
+  def strategic_computer_move
+    case computer.ai_offense_or_defense(board, COMPUTER_MARKER, human_marker)
+    when 'offense'
+      board[computer.ai_offense(board, COMPUTER_MARKER)] = computer.marker
+    when 'defense'
+      board[computer.ai_defense(board, human_marker)] = computer.marker
     end
-  end
-
-  def ai_offense
-    board[board.target_square(COMPUTER_MARKER)] = computer.marker
-  end
-
-  def ai_defense
-    board[board.target_square(HUMAN_MARKER)] = computer.marker
   end
 
   def determine_winner
     case board.winning_marker
-    when HUMAN_MARKER then HUMAN
+    when human_marker then HUMAN
     when COMPUTER_MARKER then COMPUTER
-    end
-  end
-
-  def display_result
-    clear
-    display_board
-
-    case determine_winner
-    when HUMAN then puts "You won!"
-    when COMPUTER then puts "#{computer_name} won!"
-    else puts "It's a tie!"
     end
   end
 
@@ -369,12 +412,6 @@ class TTTGame
     end
   end
 
-  def display_scoreboard
-    human = human_name.upcase
-    computer = computer_name.upcase
-    puts "#{human}: #{SCORES[0]} | #{computer}: #{SCORES[1]}"
-  end
-
   def winner?
     SCORES[0] == 5 || SCORES[1] == 5
   end
@@ -384,38 +421,32 @@ class TTTGame
     display_final_winner(winner)
   end
 
-  def display_final_winner(winner)
-    case winner
-    when HUMAN then puts "Congratulations! You've won the tournament!"
-    when COMPUTER then puts "The #{computer_name} won the tournament! :("
-    end
-  end
-
   def play_again?
     choice = ''
     loop do
       puts "Would you like to play again? (y/n)"
       choice = gets.chomp.downcase
       break if %w(y n).include? choice
-      puts "Error: Invalid input!"
+      puts "Error: Please input 'y' or 'n'!"
     end
     choice == 'y'
   end
 
+  def pause
+    puts "Hit enter to continue!"
+    gets.chomp
+    clear
+  end
+
+  def pause_and_reset
+    pause
+    reset
+  end
+
   def reset
     board.reset
-    @current_marker = FIRST_TO_MOVE
+    @current_marker = [human_marker, COMPUTER_MARKER]
     clear
-  end
-
-  def display_play_again_message
-    puts "Let's play again!"
-    puts ""
-  end
-
-  def display_goodbye_message
-    clear
-    puts "Thanks for playing Tic-Tac-Toe, #{human_name}! Goodbye!"
   end
 end
 
