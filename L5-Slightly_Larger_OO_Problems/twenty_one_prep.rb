@@ -80,6 +80,49 @@ DESIGN THOUGHTS:
  - all the output text needs reworking before first draft is done
 =end
 
+module Displayable
+  def display_divider
+    puts "-------------------------------------------------"
+  end
+
+  def clear
+    system('cls')
+  end
+
+  def joinor(array, punc = ', ', word = 'and')
+    if array.count > 1
+      last_element = array.pop
+      "#{array.join(punc)} #{word} #{last_element}"
+    else
+      array[0]
+    end
+  end
+
+  def display_welcome_message
+    clear
+    puts "Welcome to Twenty-One!"
+    puts ""
+  end
+
+  def display_result
+    case determine_winner
+    when 'player' then puts "You win the round!"
+    when 'dealer' then puts "Dealer wins the round!"
+    else puts "It's a tie!"
+    end
+  end
+
+  def display_play_again_message
+    clear
+    puts "Let's play again!"
+    puts ""
+  end
+
+  def display_goodbye_message
+    clear
+    puts "Thanks for playing Twenty-One!"
+  end
+end
 
 module Hand
   HIT = 'H'
@@ -90,8 +133,7 @@ module Hand
     hand.flatten.map(&:value)
   end
 
-  def hit; end # IMPLEMENT
-
+  # CYCLOMATIC & PERCEIVED COMPLEXITY TOO HIGH + TOO MANY LINES -- RECONCILE
   def determine_total(hand)
     sum = 0
     get_card_values(hand).each do |value|
@@ -108,19 +150,25 @@ module Hand
     sum
   end
 
+  def hit(hand)
+    hand << deck.deal
+    hand.flatten
+  end
+
+  def winner?(hand)
+    determine_total(hand) == WINNING_NUMBER
+  end
+
   def busted?(hand)
     determine_total(hand) > WINNING_NUMBER
   end
 end
 
-
-
-
-
-class Player
+class Participant
   include Hand
 
   attr_accessor :hand
+  attr_writer :total
 
   def initialize(total = 0)
     @hand = []
@@ -130,7 +178,9 @@ class Player
   def total
     determine_total(hand)
   end
+end
 
+class Player < Participant
   def hit_or_stay
     puts "Would you like to HIT (H) or STAY (S)?"
     answer = ''
@@ -141,52 +191,11 @@ class Player
     end
     answer
   end
-
-  def turn # NEED IMPLEMENTATION
-    loop do
-      choice = hit_or_stay
-      if choice == HIT
-        hit(hand)
-        break puts "You busted! TOTAL #{total}" if busted?(hand)
-        puts "You hit! Your new total is #{total}."
-      elsif choice == STAY
-        break puts "You stayed with a total of #{total}!"
-      end
-    end
-  end
 end
 
-
-
-
-
-class Dealer
-  include Hand
-
-  attr_accessor :hand
-
-  def initialize(total = 0)
-    @hand = []
-    @total = total
-  end
-
-  def total
-    determine_total(hand)
-  end
-
-  def turn # NEED IMPLEMENTATION
-    loop do
-      break puts "Dealer stayed with a total of #{total}." if total >= 17
-      hit(hand)
-      break puts "Dealer busted (TOTAL: #{total})! YOU WIN!" if busted?(hand)
-      puts "Dealer hit (NEW TOTAL: #{total})!"
-    end
-  end
+class Dealer < Participant
+  # Is there anything I should include here?
 end
-
-
-
-
 
 class Deck
   SUITS = %w(♦ ♣ ♠ ♥) # diamonds, hearts, spades, and clubs
@@ -210,10 +219,6 @@ class Deck
   end
 end
 
-
-
-
-
 class Card < Deck
   attr_reader :value, :suit
 
@@ -223,55 +228,41 @@ class Card < Deck
   end
 end
 
-
-
-
-
 # ORCHESTRATION ENGINE
 class TwentyOneGame
-  include Validatable
+  include Displayable
+  include Hand
 
   HIT = 'H'
   STAY = 'S'
 
-  attr_accessor :player, :dealer, :deck
-
   def initialize
-    @player = Player.new
-    @dealer = Dealer.new
-    @deck = Deck.new
+    reset_game
   end
 
   def play
     display_welcome_message
     loop do
-      deal_cards
-      show_cards
-      player.turn
-      dealer.turn
-      show_result
+      single_turn
       break unless play_again?
+      reset_game
+      display_play_again_message
     end
     display_goodbye_message
   end
 
   private
 
-  def clear
-    system('cls')
-  end
+  attr_accessor :player, :dealer, :deck
 
-  def joinor(array, punc = ', ', word = 'and')
-    if array.count > 1
-      last_element = array.delete(array.last)
-      "#{array.join(punc)} #{word} #{last_element}"
-    else
-      array[0]
-    end
-  end
-
-  def display_welcome_message
-    puts "Welcome to Twenty-One!"
+  def single_turn
+    deal_cards
+    show_cards
+    player_turn
+    return if player.winner?(player.hand)
+    dealer_turn
+    return if dealer.winner?(dealer.hand)
+    display_result
   end
 
   def deal_cards
@@ -281,43 +272,93 @@ class TwentyOneGame
 
   def show_cards
     player_cards = player.get_card_values(player.hand)
-    puts "YOU HAVE: #{joinor(player_cards)} (TOTAL: #{player.total})"
+    puts "YOU HAVE:     #{joinor(player_cards)} (TOTAL: #{player.total})"
 
     dealer_cards = player.get_card_values(dealer.hand)
-    puts "DEALER HAS: #{joinor(dealer_cards)} (TOTAL: #{dealer.total})" # REMEMBER TO HIDE LAST # IN FINAL CODE
+    puts "DEALER HAS:   #{joinor([dealer_cards.first, '?'])}"
+    # (TOTAL: #{dealer.total})\n\n" # REMEMBER TO HIDE LAST # IN FINAL CODE
   end
 
-  def hit(hand) # SEE IF I CAN'T MOVE THIS TO HAND MODULE
-    hand << deck.deal
-    hand.flatten
-  end
-
-  def show_result
-    case determine_winner
-    when 'player' then puts "You win the round!"
-    when 'dealer' then puts "Dealer wins the round!"
-    else puts "It's a tie!"
+  # ABCSize TOO HIGH + METHOD TOO LONG -- RECONCILE
+  def player_turn
+    loop do
+      if player.winner?(player.hand)
+        break puts "Your total is #{player.total} - YOU WIN :D :D!!"
+      elsif player.busted?(player.hand)
+        break puts "You busted!"
+      else # player total < 21
+        display_divider
+        choice = player.hit_or_stay
+        if choice == Player::HIT
+          hit(player.hand)
+          puts "\nYou chose to hit!"
+          puts "Your new total is #{player.total}."
+        elsif choice == Player::STAY
+          break puts "\nYou stayed with a total of #{player.total}."
+        end
+      end
     end
   end
 
-  def determine_winner # LOGIC DOESN'T ACCOUNT FOR WHETHER PARTICIPANT HAS BUSTED
-    if player.total > dealer.total
-      'player'
-    elsif player.total < dealer.total
-      'dealer'
-    else
+  # ABCSize TOO HIGH + METHOD TOO LONG -- RECONCILE
+  def dealer_turn
+    display_divider
+    loop do
+      if dealer.winner?(dealer.hand)
+        break puts "Dealer's total is #{dealer.total} - THE DEALER WINS!"
+      elsif dealer.busted?(dealer.hand)
+        break puts "Dealer busted with a total of #{dealer.total}!"
+      else # dealer total < 21
+        if dealer.total < 17
+          hit(dealer.hand)
+          puts "The dealer chose to hit!"
+        else
+          break puts "Dealer chose to stay with a total of #{dealer.total}."
+        end
+      end
+    end
+    display_divider
+  end
+
+  # ABCSize & PERCEIVED/CYCLOMATIC COMPLEXITY TOO HIGH + METHOD TOO LONG -- RECONCILE
+  def determine_winner
+    player_busted = player.busted?(player.hand)
+    dealer_busted = dealer.busted?(dealer.hand)
+
+    if player_busted && dealer_busted || player.total == dealer.total
       'tie'
+    elsif (player.total > dealer.total && !player_busted) || dealer_busted
+      'player'
+    elsif (player.total < dealer.total && !dealer_busted) || player_busted
+      'dealer'
     end
   end
 
+  # METHOD TOO LONG -- RECONCILE
   def play_again?
-    puts "Would you like to play again?"
-    # IMPLEMENT REST LATER
-    puts "Maybe later :P"
+    puts ""
+    pause
+    clear
+    puts "Would you like to play again? (y/n)"
+    answer = ""
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(y n).include?(answer)
+      puts "Error: Please input 'y' or 'n'!"
+    end
+    answer == 'y'
   end
 
-  def display_goodbye_message
-    puts "Thanks for playing Twenty-One!"
+  def pause
+    puts "Hit enter to continue!"
+    gets.chomp
+    clear
+  end
+
+  def reset_game
+    @player = Player.new
+    @dealer = Dealer.new
+    @deck = Deck.new
   end
 end
 
