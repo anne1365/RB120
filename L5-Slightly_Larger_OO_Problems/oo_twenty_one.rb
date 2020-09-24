@@ -12,15 +12,21 @@ module Displayable
   end
 
   def pause
+    puts ""
     puts "Hit enter to continue!"
     gets.chomp
     clear
   end
 
-  def joinor(array, punc = ', ', word = 'and')
+  def pause_and_clear
+    pause
+    clear
+  end
+
+  def joinor(array, punc = "\n -> ")
     if array.count > 1
       last_element = array.pop
-      "#{array.join(punc)} #{word} #{last_element}"
+      "#{punc}#{array.join(punc)}#{punc}#{last_element}"
     else
       array[0]
     end
@@ -38,8 +44,7 @@ module Displayable
   end
 
   def display_current_total_message(total)
-    puts ""
-    puts "              YOUR CURRENT TOTAL: #{total}"
+    puts "               YOUR CURRENT TOTAL : #{total}"
   end
 
   def display_player_hit_message(total)
@@ -68,6 +73,10 @@ module Displayable
   end
 
   # OUTCOME MESSAGES
+  def display_final_hand_message
+    puts TEXT[:final_hand_message]
+  end
+
   def display_result
     case determine_winner
     when 'player' then puts TEXT[:player_won]
@@ -105,6 +114,12 @@ module Hand
   STAY = 'S'
   WINNING_NUMBER = 21
 
+  def get_card_suits_and_values(hand)
+    hand.flatten.map.with_index do |_, idx|
+      "#{hand.flatten.map(&:value)[idx]} of #{hand.flatten.map(&:suit)[idx]}"
+    end
+  end
+
   def get_card_values(hand)
     hand.flatten.map(&:value)
   end
@@ -114,8 +129,8 @@ module Hand
 
     get_card_values(hand).each do |value|
       sum += value.to_i if ('1'..'10').include?(value)
-      sum += 10 if ('JQK').include?(value)
-      sum += determine_ace_value(sum) if value == 'A'
+      sum += 10 if %w(Jack Queen King).include?(value)
+      sum += determine_ace_value(sum) if value == 'Ace'
     end
 
     sum
@@ -171,11 +186,9 @@ class Player < Participant
   end
 end
 
-class Dealer < Participant; end
-
 class Deck
-  SUITS = %w(♦ ♣ ♠ ♥) # diamonds, hearts, spades, and clubs
-  VALUES = %w(2 3 4 5 6 7 8 9 10 J Q K A)
+  SUITS = %w(Diamonds Hearts Spades Clubs)
+  VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 
   attr_accessor :cards
 
@@ -214,7 +227,7 @@ class TwentyOneGame
 
   def initialize
     @player = Player.new
-    @dealer = Dealer.new
+    @dealer = Participant.new
     @deck = Deck.new
   end
 
@@ -222,7 +235,7 @@ class TwentyOneGame
     display_welcome_message
 
     loop do
-      single_turn
+      single_round
       break unless play_again?
       reset_game
       display_play_again_message
@@ -235,13 +248,14 @@ class TwentyOneGame
 
   attr_accessor :player, :dealer, :deck
 
-  def single_turn
+  def single_round
     deal_cards
     show_cards
     player_turn
     return if player_busted?
     dealer_turn
     return if dealer_busted?
+    show_all_cards
     display_result
   end
 
@@ -251,11 +265,24 @@ class TwentyOneGame
   end
 
   def show_cards
-    player_cards = player.get_card_values(player.hand)
-    puts "YOU HAVE:     #{joinor(player_cards)}"
+    puts ""
+    player_cards = player.get_card_suits_and_values(player.hand)
+    puts "YOUR HAND: #{joinor(player_cards)}"
+    puts ""
+    dealer_cards = player.get_card_suits_and_values(dealer.hand)
+    puts "DEALER'S HAND: #{joinor([dealer_cards.first, '?'])}"
+    puts ""
+  end
 
-    dealer_cards = player.get_card_values(dealer.hand)
-    puts "DEALER HAS:   #{joinor([dealer_cards.first, '?'])}"
+  def show_all_cards
+    puts "\n\n"
+    display_final_hand_message
+    puts ""
+    player_cards = player.get_card_suits_and_values(player.hand)
+    puts "YOUR HAND: #{joinor(player_cards)}"
+    puts ""
+    dealer_cards = player.get_card_suits_and_values(dealer.hand)
+    puts "DEALER'S HAND: #{joinor(dealer_cards)}"
   end
 
   def player_turn
@@ -266,9 +293,14 @@ class TwentyOneGame
         break display_player_stay_message(player.total)
       end
 
-      hit(player.hand)
-      display_player_hit_message(player.total)
+      player_hit
     end
+  end
+
+  def player_hit
+    hit(player.hand)
+    display_player_hit_message(player.total)
+    pause_and_clear
   end
 
   def dealer_turn
