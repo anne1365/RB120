@@ -7,10 +7,15 @@ end
 class Person
   include Walkable
 
-  attr_accessor :name
+  attr_reader :name
 
   def initialize(name)
     @name = name
+  end
+
+  def name=(name)
+    @name = name.upcase!
+    return 5
   end
 end
 
@@ -32,4 +37,7 @@ a = Interaction.new
 a.greet('Anne')
 
 
-
+a = Person.new('Anne')
+p a.name
+a.name=('Bob')
+p a.name
