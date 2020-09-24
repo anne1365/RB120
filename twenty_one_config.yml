@@ -3,10 +3,14 @@
 \nWelcome to Twenty-One! We're shuffling the deck now..
 \n-----------------------------------------------------"
 
+:lets_play_again: "----------------------------------------------------
+                 \n                (:  LET'S PLAY AGAIN!  :)
+                 \n----------------------------------------------------"
+
 # HIT OR STAY?
-:hit_or_stay: "             -------------------------
-               \n             | HIT or STAY? (H or S) |
-               \n             -------------------------"
+:hit_or_stay: "              -------------------------
+               \n--------------| HIT or STAY? (H or S) |--------------
+               \n              -------------------------"
 
 #GAME DECISIONS
 :player_hits: "You chose to HIT"
@@ -18,36 +22,35 @@
 :player_busted: "\n----------------------------------------------------
                  \n                ):  YOU BUSTED  :(
                  \n----------------------------------------------------"
+
 :dealer_busted: "\n----------------------------------------------------
                  \n         :D   DEALER BUSTED -- YOU WIN! :D
-                 \n----------------------------------------------------"
-:player_twenty_one: "\n----------------------------------------------------
-                 \n   :D   YOU GOT THE WINNING NUMBER! YOU WIN!   :D
-                 \n----------------------------------------------------"
-:dealer_twenty_one: "\n----------------------------------------------------
-                 \n  ): DEALER GOT THE WINNING NUMBER -- YOU LOSE! :(
-                 \n----------------------------------------------------"
+                 \n----------------------------------------------------
+                 \n\n _._     _,-'\"\"`-._      <-- CELEBRATION CAT!
+                 \n(,-.`._,'(       |\\`-/|
+                 \n    `-.-' \\ )-`( , o o)
+                 \n         `-    \\`_`\"'-
+                 \n"
+
 :tie: "\n----------------------------------------------------
                  \n     O:   You're both winners - it's a tie!  :O
                  \n----------------------------------------------------"
-:player_won: "\n----------------------------------------------------
-                 \n >>>>>>>>>>>>>>  :D  YOU WON!!!  :D   <<<<<<<<<<<<<<
-                 \n----------------------------------------------------"
+
 :dealer_won: "\n----------------------------------------------------
                  \n               ),:  DEALER WON  :,(
                  \n----------------------------------------------------"
 
-#OVERALL WINNER DECLARATIONS
-:player_won_match: "\n\n _._     _,-'\"\"`-._          <-- CELEBRATION CAT!
+:player_won: "\n----------------------------------------------------
+                 \n >>>>>>>>>>>>>>  :D  YOU WON!!!  :D   <<<<<<<<<<<<<<
+                 \n----------------------------------------------------
+                  \n\n _._     _,-'\"\"`-._      <-- CELEBRATION CAT!
                     \n(,-.`._,'(       |\\`-/|
                     \n    `-.-' \\ )-`( , o o)
                     \n         `-    \\`_`\"'-
-                    \n                         YOU WON THE TOURNAMENT!!\n"
-:tied_match: "\n    I can't believe this, but this match is tied!  \n"
-:dealer_won_match: "                Dealer won the match :(              \n"
+                    \n"
 
 # PLAY AGAIN?
-:play_again: "\n\n<>.><o><o><o><o><o><o><o><><o><o><o><o><o><o><o><.<>
+:play_again: "<>.><o><o><o><o><o><o><o><><o><o><o><o><o><o><o><.<>
                  \n<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>
                  \n><.><                                          ><.><   
                  \n<>.<>    Do you want to play again?  (Y / N)   <>.<> 
@@ -56,8 +59,4 @@
                  \n<>.><o><o><o><o><o><o><><o><o><o><o><o><o><o><o><.<>"
 
 # THANKS FOR PLAYING!
-:thanks_for_playing: "\n  <3 <3 <3 THANKS FOR PLAYING TWENTY-ONE! <3 <3 <3\n\n\n\n"
-
-#ERRORS
-:invalid_entry: "Error: Invalid move choice."
-
+:thanks_for_playing: "\n  (: (: (: THANKS FOR PLAYING TWENTY-ONE! :) :) :)\n\n"
