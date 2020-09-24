@@ -4,7 +4,7 @@ module Displayable
 
   # UTILITY METHODS
   def display_divider
-    puts "----------------------------------------"
+    puts TEXT[:divider]
   end
 
   def clear
@@ -252,11 +252,11 @@ class TwentyOneGame
     deal_cards
     show_cards
     player_turn
-    return if player_busted?
+    return show_all_cards if player_busted?
     dealer_turn
-    return if dealer_busted?
-    show_all_cards
+    return show_all_cards if dealer_busted?
     display_result
+    show_all_cards
   end
 
   def deal_cards
@@ -283,6 +283,7 @@ class TwentyOneGame
     puts ""
     dealer_cards = player.get_card_suits_and_values(dealer.hand)
     puts "DEALER'S HAND: #{joinor(dealer_cards)}"
+    display_divider
   end
 
   def player_turn
