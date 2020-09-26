@@ -1,3 +1,18 @@
+=begin
+Using the Card class from the previous exercise, create a Deck class that
+contains all of the standard 52 playing cards. Use the following code to start
+your work:
+
+Copy Code
+class Deck
+  RANKS = ((2..10).to_a + %w(Jack Queen King Ace)).freeze
+  SUITS = %w(Hearts Clubs Diamonds Spades).freeze
+end
+The Deck class should provide a #draw method to deal one card. The Deck should
+be shuffled when it is initialized and, if it runs out of cards, it should reset
+itself by generating a new set of 52 shuffled cards.
+=end
+
 class Deck
   RANKS = ((2..10).to_a + %w(Jack Queen King Ace)).freeze
   SUITS = %w(Hearts Clubs Diamonds Spades).freeze
