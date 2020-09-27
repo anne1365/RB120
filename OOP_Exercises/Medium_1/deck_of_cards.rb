@@ -13,6 +13,7 @@ be shuffled when it is initialized and, if it runs out of cards, it should reset
 itself by generating a new set of 52 shuffled cards.
 =end
 
+
 class Deck
   RANKS = ((2..10).to_a + %w(Jack Queen King Ace)).freeze
   SUITS = %w(Hearts Clubs Diamonds Spades).freeze
