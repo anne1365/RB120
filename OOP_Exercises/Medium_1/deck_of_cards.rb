@@ -29,7 +29,7 @@ class Deck
 
   def draw
     reset if cards.empty?
-    self.cards.shift 
+    cards.shift 
   end
 
   def to_s
@@ -37,25 +37,25 @@ class Deck
   end
 
   def reset
-    @cards = shuffle.map { |card| card = Card.new(card[0], card[1]) }
+    self.cards = shuffle.map { |card| card = Card.new(card[0], card[1]) }
   end
 end
 
 class Card
   include Comparable
   attr_accessor :rank, :suit
-    
+
   HIERARCHY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']
-  
+
   def initialize(rank, suit)
     @rank = rank
     @suit = suit
   end
-  
+
   def to_s
     "#{rank} of #{suit}"
   end
-  
+
   def <=>(other)
     HIERARCHY.index(rank) <=> HIERARCHY.index(other.rank)
   end
