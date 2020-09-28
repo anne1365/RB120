@@ -11,9 +11,7 @@ end
 The Deck class should provide a #draw method to deal one card. The Deck should
 be shuffled when it is initialized and, if it runs out of cards, it should reset
 itself by generating a new set of 52 shuffled cards.
-
 =end
-
 
 class Deck
   RANKS = ((2..10).to_a + %w(Jack Queen King Ace)).freeze
@@ -22,21 +20,30 @@ class Deck
   attr_accessor :cards
 
   def initialize
-    @cards = shuffle
+    reset
   end
 
   def shuffle
-    SUITS.product(RANKS).shuffle
+    RANKS.product(SUITS).shuffle
   end
 
   def draw
-    self.cards.shift
+    reset if cards.empty?
+    self.cards.shift 
+  end
+
+  def to_s
+    "#{rank} of #{suit}"
+  end
+
+  def reset
+    @cards = shuffle.map { |card| card = Card.new(card[0], card[1]) }
   end
 end
 
-class Card < Deck
+class Card
   include Comparable
-  attr_reader :rank, :suit
+  attr_accessor :rank, :suit
     
   HIERARCHY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']
   
@@ -52,22 +59,14 @@ class Card < Deck
   def <=>(other)
     HIERARCHY.index(rank) <=> HIERARCHY.index(other.rank)
   end
-
-  def rank
-    
-  end
-
-  def suit
-    self[0]
-  end
 end
 
 deck = Deck.new
 drawn = []
 52.times { drawn << deck.draw }
-drawn.count { |card| card.rank == 5 } == 4
-drawn.count { |card| card.suit == 'Hearts' } == 13
+p drawn.count { |card| card.rank == 5 } == 4
+p drawn.count { |card| card.suit == 'Hearts' } == 13
 
 drawn2 = []
 52.times { drawn2 << deck.draw }
-drawn != drawn2 # Almost always.
+p drawn != drawn2 # Almost always.
