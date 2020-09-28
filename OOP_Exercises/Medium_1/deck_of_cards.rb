@@ -11,6 +11,7 @@ end
 The Deck class should provide a #draw method to deal one card. The Deck should
 be shuffled when it is initialized and, if it runs out of cards, it should reset
 itself by generating a new set of 52 shuffled cards.
+
 =end
 
 
