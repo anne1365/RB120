@@ -111,12 +111,6 @@ class PokerHand
     count_repeating_cards(2, 1)
   end
 
-  def count_repeating_cards(repeat_number, repeat_occurrences)
-    Deck::RANKS.count do |rank|
-      cards.count { |card| card.rank == rank } == repeat_number
-    end == repeat_occurrences
-  end
-
   def ranks
     cards.sort! do |a, b|
       Card::HIERARCHY.index(a.rank) <=> Card::HIERARCHY.index(b.rank)
@@ -126,6 +120,12 @@ class PokerHand
 
   def suits
     cards.map(&:suit)
+  end
+
+  def count_repeating_cards(repeat_number, repeat_occurrences)
+    Deck::RANKS.count do |rank|
+      cards.count { |card| card.rank == rank } == repeat_number
+    end == repeat_occurrences
   end
 end
 
