@@ -12,9 +12,15 @@ class Deck
     RANKS.product(SUITS).shuffle
   end
 
-  def draw
-    reset if cards.empty?
-    cards.shift 
+  def draw(number_of_cards)
+    dealt_cards = []
+
+    number_of_cards.times do
+      break reset if cards.empty?
+      dealt_cards << cards.shift
+    end
+
+    dealt_cards
   end
 
   def to_s
@@ -22,42 +28,34 @@ class Deck
   end
 
   def reset
-    self.cards = shuffle.map { |card| card = Card.new(card[0], card[1]) }
+    self.cards = shuffle.map { |card| Card.new(card[0], card[1]) }
   end
 end
 
 class Card
-  # include Comparable
+  include Comparable
   attr_accessor :rank, :suit
 
-  # HIERARCHY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']
+  HIERARCHY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'Jack', 'Queen', 'King', 'Ace']
 
   def initialize(rank, suit)
     @rank = rank
     @suit = suit
   end
-
-  # def to_s
-  #   "#{rank} of #{suit}"
-  # end
-
-  # def <=>(other)
-  #   HIERARCHY.index(rank) <=> HIERARCHY.index(other.rank)
-  # end
 end
 
 class PokerHand
-  attr_accessor :hand
+  ROYAL_FLUSH = ['10', 'Jack', 'Queen', 'King', 'Ace']
+
+  attr_accessor :cards
 
   def initialize(deck)
     @deck = deck
-    @hand = []
-    
-    5.times { hand << deck.draw }
+    @cards = deck.draw(5)
   end
 
   def print
-    hand.each { |card| puts "#{card.rank} of #{card.suit}" }
+    cards.each { |card| puts "#{card.rank} of #{card.suit}" }
   end
 
   def evaluate
@@ -78,15 +76,15 @@ class PokerHand
   private
 
   def royal_flush?
+    ranks == ROYAL_FLUSH && flush?
   end
 
   def straight_flush?
+    flush? && straight?
   end
 
   def four_of_a_kind?
-    Deck::RANKS.each do |rank|
-      hand.count { |card| card.rank == rank } == 4 
-    end == 1
+    count_repeating_cards(4, 1)
   end
 
   def full_house?
@@ -94,28 +92,41 @@ class PokerHand
   end
 
   def flush?
+    suits.uniq.size == 1
   end
 
   def straight?
+    Deck::RANKS.join.include?(ranks.join)
   end
 
   def three_of_a_kind?
-    Deck::RANKS.count do |rank|
-      hand.count { |card| card.rank == rank } == 3 
-    end == 1
+    count_repeating_cards(3, 1)
   end
 
   def two_pair?
-    Deck::RANKS.count do |rank|
-      hand.count { |card| card.rank == rank } == 2 
-    end == 2
+    count_repeating_cards(2, 2)
   end
 
   def pair?
+    count_repeating_cards(2, 1)
+  end
+
+  def count_repeating_cards(repeat_number, repeat_occurrences)
     Deck::RANKS.count do |rank|
-      hand.count { |card| card.rank == rank } == 2 
-    end == 1
-  end 
+      cards.count { |card| card.rank == rank } == repeat_number
+    end == repeat_occurrences
+  end
+
+  def ranks
+    cards.sort! do |a, b|
+      Card::HIERARCHY.index(a.rank) <=> Card::HIERARCHY.index(b.rank)
+    end
+    cards.map { |card| card.rank.to_s }
+  end
+
+  def suits
+    cards.map(&:suit)
+  end
 end
 
 # TESTING, TESTING
@@ -137,9 +148,7 @@ hand = PokerHand.new([
   Card.new('King',  'Hearts'),
   Card.new('Jack',  'Hearts')
 ])
-puts "\nHand should be Royal Flush:"
-puts hand.evaluate# == 'Royal flush'
-puts
+puts hand.evaluate == 'Royal flush'
 
 hand = PokerHand.new([
   Card.new(8,       'Clubs'),
@@ -148,9 +157,7 @@ hand = PokerHand.new([
   Card.new(10,      'Clubs'),
   Card.new('Jack',  'Clubs')
 ])
-puts "Hand should be Straight Flush:"
-puts hand.evaluate# == 'Straight flush'
-puts
+puts hand.evaluate == 'Straight flush'
 
 hand = PokerHand.new([
   Card.new(3, 'Hearts'),
@@ -159,9 +166,7 @@ hand = PokerHand.new([
   Card.new(3, 'Spades'),
   Card.new(3, 'Diamonds')
 ])
-puts "Hand should be Four of a kind:"
-puts hand.evaluate# == 'Four of a kind'
-puts
+puts hand.evaluate == 'Four of a kind'
 
 hand = PokerHand.new([
   Card.new(3, 'Hearts'),
@@ -170,9 +175,7 @@ hand = PokerHand.new([
   Card.new(3, 'Spades'),
   Card.new(5, 'Hearts')
 ])
-puts "Hand should be Full House"
-puts hand.evaluate# == 'Full house'
-puts
+puts hand.evaluate == 'Full house'
 
 hand = PokerHand.new([
   Card.new(10, 'Hearts'),
@@ -181,9 +184,7 @@ hand = PokerHand.new([
   Card.new('King', 'Hearts'),
   Card.new(3, 'Hearts')
 ])
-puts "Hand should be Flush:"
-puts hand.evaluate# == 'Flush'
-puts
+puts hand.evaluate == 'Flush'
 
 hand = PokerHand.new([
   Card.new(8,      'Clubs'),
@@ -192,9 +193,7 @@ hand = PokerHand.new([
   Card.new(7,      'Hearts'),
   Card.new('Jack', 'Clubs')
 ])
-puts "Hand should be Straight:"
-puts hand.evaluate# == 'Straight'
-puts
+puts hand.evaluate == 'Straight'
 
 hand = PokerHand.new([
   Card.new('Queen', 'Clubs'),
@@ -203,9 +202,7 @@ hand = PokerHand.new([
   Card.new('Ace',   'Hearts'),
   Card.new('Jack',  'Clubs')
 ])
-puts "Hand should be Straight:"
-puts hand.evaluate# == 'Straight'
-puts
+puts hand.evaluate == 'Straight'
 
 hand = PokerHand.new([
   Card.new(3, 'Hearts'),
@@ -214,9 +211,7 @@ hand = PokerHand.new([
   Card.new(3, 'Spades'),
   Card.new(6, 'Diamonds')
 ])
-puts "Hand should be Three of a kind:"
-puts hand.evaluate# == 'Three of a kind'
-puts
+puts hand.evaluate == 'Three of a kind'
 
 hand = PokerHand.new([
   Card.new(9, 'Hearts'),
@@ -225,9 +220,7 @@ hand = PokerHand.new([
   Card.new(8, 'Spades'),
   Card.new(5, 'Hearts')
 ])
-puts "Hand should be a Two pair:"
-puts hand.evaluate# == 'Two pair'
-puts
+puts hand.evaluate == 'Two pair'
 
 hand = PokerHand.new([
   Card.new(2, 'Hearts'),
@@ -236,9 +229,7 @@ hand = PokerHand.new([
   Card.new(9, 'Spades'),
   Card.new(3, 'Diamonds')
 ])
-puts "Hand should be a pair:"
-puts hand.evaluate# == 'Pair'
-puts
+puts hand.evaluate == 'Pair'
 
 hand = PokerHand.new([
   Card.new(2,      'Hearts'),
@@ -247,6 +238,4 @@ hand = PokerHand.new([
   Card.new(9,      'Spades'),
   Card.new(3,      'Diamonds')
 ])
-puts "Hand should be a High card:"
-puts hand.evaluate# == 'High card'
-puts
+puts hand.evaluate == 'High card'
