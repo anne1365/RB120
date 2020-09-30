@@ -23,10 +23,23 @@
 
  EXAMPLES / TEST CASES: below
 
- MENTAL MODEL: 
+ MENTAL MODEL: Given a buffer of size x, we want to add objects to the end of the buffer. When
+ the buffer is full, we want to override the oldest data with the new data. For this, we need
+ to know where the oldest data is, and we need to know what the next buffer slot holds. We also
+ need to be continually aware of how large our buffer needs to be, and how any slot not filled
+ should return nil.
 
- ALGORITHM:
-
+ ALGORITHM: 
+ - SETTING UP THE CLASS
+   - the queue should be initialized as an array containing x number of nil objects
+   - an instance variable `next_element` should be initialized to track the contents of the next
+     buffer slot
+   - an `oldest_element` will hold the oldest object in the buffer
+ - ENQUEUE
+   - if the next element is nil, we'll reassign the next element to the object and then increment
+     the next element by one
+   - if the next element is not nil, 
+ 
 =end
 
 class CircularQueue
@@ -38,10 +51,16 @@ class CircularQueue
   end
 
   def enqueue(obj)
+    p @queue[@next_element].nil?
+    p @oldest_element
+    p increment(@next_element)
+    
     unless @queue[@next_element].nil?
       @oldest_element = increment(@next_element)
     end
-
+    
+    p @oldest_element
+    
     @queue[@next_element] = obj
     @next_element = increment(@next_element)
   end
@@ -49,6 +68,7 @@ class CircularQueue
   def dequeue
     value = @queue[@oldest_element]
     @queue[@oldest_element] = nil
+    # puts "Incrementing oldest element. Before #{@oldest_element} after #{increment(@oldest_element)}"
     @oldest_element = increment(@oldest_element) unless value.nil?
     value
   end
@@ -60,41 +80,62 @@ class CircularQueue
   end
 end
 
+# class CircularQueue
+#   def initialize(max_queue_size)
+#     @max_queue_size = max_queue_size
+#     @queue = []
+#   end
+
+#   def enqueue(obj)
+#     dequeue if queue_full?
+#     @queue << obj
+#   end
+
+#   def dequeue
+#     @queue.shift
+#   end
+
+#   private
+
+#   def queue_full?
+#     @queue.size == @max_queue_size
+#   end
+# end
+
 queue = CircularQueue.new(3)
-puts queue.dequeue == nil
-
+# puts queue.dequeue == nil
+queue
 queue.enqueue(1)
+p queue
 queue.enqueue(2)
-puts queue.dequeue == 1
-
+p queue
+# puts queue.dequeue == 1
 queue.enqueue(3)
 queue.enqueue(4)
-puts queue.dequeue == 2
+# puts queue.dequeue == 2
+# queue.enqueue(5)
+# queue.enqueue(6)
+# queue.enqueue(7)
+# puts queue.dequeue == 5
+# puts queue.dequeue == 6
+# puts queue.dequeue == 7
+# puts queue.dequeue == nil
 
-queue.enqueue(5)
-queue.enqueue(6)
-queue.enqueue(7)
-puts queue.dequeue == 5
-puts queue.dequeue == 6
-puts queue.dequeue == 7
-puts queue.dequeue == nil
 
-queue = CircularQueue.new(4)
-puts queue.dequeue == nil
+# queue = CircularQueue.new(4)
+# puts queue.dequeue == nil
+# queue.enqueue(1)
+# queue.enqueue(2)
+# puts queue.dequeue == 1
+# queue.enqueue(3)
+# queue.enqueue(4)
+# puts queue.dequeue == 2
+# queue.enqueue(5)
+# queue.enqueue(6)
+# queue.enqueue(7)
+# puts queue.dequeue == 4
+# puts queue.dequeue == 5
+# puts queue.dequeue == 6
+# puts queue.dequeue == 7
+# puts queue.dequeue == nil
 
-queue.enqueue(1)
-queue.enqueue(2)
-puts queue.dequeue == 1
-
-queue.enqueue(3)
-queue.enqueue(4)
-puts queue.dequeue == 2
-
-queue.enqueue(5)
-queue.enqueue(6)
-queue.enqueue(7)
-puts queue.dequeue == 4
-puts queue.dequeue == 5
-puts queue.dequeue == 6
-puts queue.dequeue == 7
-puts queue.dequeue == nil
