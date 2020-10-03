@@ -15,4 +15,4 @@ puts GoodDog.total_number_of_dogs
 dog1 = GoodDog.new
 dog2 = GoodDog.new
 
-puts GoodDog.total_number_of_dogs
+puts GoodDog.total_number_of_dogs 
